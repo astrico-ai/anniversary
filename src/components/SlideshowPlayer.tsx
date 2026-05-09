@@ -161,7 +161,10 @@ export function SlideshowPlayer({
     if (paused) {
       v.pause();
     } else {
-      v.play().catch(() => {});
+      v.play().catch(() => {
+        v.muted = true;
+        v.play().catch(() => {});
+      });
     }
   }, [paused, current?.mediaType]);
 
@@ -190,11 +193,16 @@ export function SlideshowPlayer({
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [index, current?.mediaType, paused, advance, photoDuration]);
 
-  // Play video when active
+  // Play video when active — mute first if needed for iOS autoplay policy
   useEffect(() => {
     if (current?.mediaType === "video") {
       const v = videoRef.current;
-      if (v) { v.currentTime = 0; v.play().catch(() => {}); }
+      if (!v) return;
+      v.currentTime = 0;
+      v.play().catch(() => {
+        v.muted = true;
+        v.play().catch(() => {});
+      });
     }
   }, [index, current?.mediaType]);
 
