@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# S&S — Our Story, Now Streaming
 
-## Getting Started
+A streaming-style anniversary site for Sanuj & Sanskriti (year two).
 
-First, run the development server:
+## Stack
+- Next.js 16 (App Router) + React 19 + TypeScript
+- Tailwind CSS v4
+- Framer Motion
+- Cloudinary for media (optional; falls back to placeholders until configured)
 
+## Run locally
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+Visit http://localhost:3000
+
+## Add your content
+
+### 1. Cloudinary
+1. Sign up free at https://cloudinary.com
+2. Copy your **Cloud Name** from the dashboard
+3. Create `.env.local`:
+   ```
+   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
+   ```
+4. Upload media in the Cloudinary dashboard. Each file gets a `public_id` (e.g., `lisbon/cover`, `first-date/dinner-1`). Folder slashes are part of the id.
+
+### 2. Edit shows
+Open `src/data/shows.ts`. Replace placeholder media with Cloudinary references:
+```ts
+poster:   { kind: "cloudinary", publicId: "anniversary/poster" },
+backdrop: { kind: "cloudinary", publicId: "anniversary/backdrop" },
+trailer:  { kind: "cloudinary", publicId: "anniversary/trailer" }, // optional, autoplays on billboard
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+For each "show," add as many episodes as you want:
+```ts
+episodes: [
+  {
+    id: "ep-1",
+    title: "Day Zero",
+    description: "The story behind this moment.",
+    date: "2024-05-10",
+    durationLabel: "Photo",
+    thumbnail: { kind: "cloudinary", publicId: "first-date/cover" },
+    media:     { kind: "cloudinary", publicId: "first-date/cover" },
+    mediaType: "image", // or "video"
+  },
+]
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Edit rows / featured show
+Same file — `rows` controls the order on the home page; `featuredShowId` controls the billboard hero.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Intro sound (optional)
+Drop a 1–3 second cinematic stinger at `public/sound/intro.mp3`. Splash plays it on first load. See `public/sound/README.txt` for sources.
 
-## Learn More
+## Deploy to Vercel
+```bash
+npx vercel
+```
+Add the env var in the Vercel dashboard:
+- `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` = your cloud name
 
-To learn more about Next.js, take a look at the following resources:
+Vercel gives you a public URL (you can rename in project settings).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Structure
+- `src/app/page.tsx` — splash + profile picker
+- `src/app/browse/page.tsx` — home (billboard + rows)
+- `src/app/browse/[showId]/page.tsx` — detail page
+- `src/components/` — Logo, Splash, ProfilePicker, Nav, Billboard, Row, Card, DetailView
+- `src/data/shows.ts` — your content
+- `src/data/profiles.ts` — Sanuj / Sanskriti / Us profiles
+- `src/lib/cloudinary.ts` — image/video URL helpers
